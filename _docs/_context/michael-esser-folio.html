@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Michael Esser — Portfolio</title>
+  <style>
+    :root {
+      --bg:       #f5f5f7;
+      --surface:  #ffffff;
+      --text:     #1d1d1f;
+      --text-2:   #6e6e73;
+      --text-3:   #adadb8;
+      --accent:   #0071e3;
+      --accent-h: #0077ed;
+      --border:   rgba(0,0,0,0.07);
+      --r:        18px;
+      --sh:       0 2px 6px rgba(0,0,0,0.04), 0 8px 24px rgba(0,0,0,0.06);
+      --sh-h:     0 4px 16px rgba(0,0,0,0.08), 0 20px 48px rgba(0,0,0,0.1);
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; overflow-x: hidden; -webkit-overflow-scrolling: touch; }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, 'Helvetica Neue', sans-serif;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ── HERO ── */
+    .hero {
+      background: var(--surface);
+      padding: 120px 48px 96px;
+      text-align: center;
+      border-bottom: 1px solid var(--border);
+    }
+    .hero-eyebrow {
+      font-size: 12px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase;
+      color: var(--accent); margin-bottom: 24px;
+    }
+    .hero-name {
+      font-size: clamp(52px, 8vw, 108px); font-weight: 700; letter-spacing: -0.03em;
+      line-height: 1.0; color: var(--text); margin-bottom: 24px;
+    }
+    .hero-summary {
+      max-width: 580px; margin: 0 auto 48px; font-size: 17px; line-height: 1.75;
+      color: var(--text-2); font-weight: 400;
+    }
+    .hero-badges { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; }
+    .hero-badge {
+      padding: 7px 18px; border-radius: 40px; background: var(--bg);
+      font-size: 13px; font-weight: 500; color: var(--text-2); border: 1px solid var(--border);
+    }
+    .hero-badge .b-co { color: var(--text); }
+
+    /* ── METRICS ── */
+    .metrics-band { padding: 40px 48px; max-width: 1100px; margin: 0 auto; }
+    .metrics-inner { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
+    .metric-card {
+      background: rgba(255,255,255,0.75);
+      backdrop-filter: blur(20px) saturate(1.4);
+      -webkit-backdrop-filter: blur(20px) saturate(1.4);
+      border-radius: var(--r); padding: 32px 24px;
+      box-shadow: var(--sh); border: 1px solid rgba(255,255,255,0.9); text-align: center;
+    }
+    .metric-card.empty { background: transparent; box-shadow: none; border-color: transparent; }
+    .metric-n {
+      font-size: clamp(40px, 4.5vw, 60px); font-weight: 700; letter-spacing: -0.04em;
+      line-height: 1; color: var(--text); margin-bottom: 10px;
+    }
+    .metric-n em { color: var(--accent); font-style: normal; }
+    .metric-l { font-size: 13px; color: var(--text-2); line-height: 1.5; }
+
+    /* ── SHARED SECTION ── */
+    .content-wrap { max-width: 1100px; margin: 0 auto; }
+    .sec { padding: 80px 48px; border-top: 1px solid var(--border); }
+    .sec-label {
+      font-size: 11px; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase;
+      color: var(--text-3); margin-bottom: 52px;
+    }
+
+    /* ── WORK ── */
+    .work-list { display: flex; flex-direction: column; gap: 12px; }
+    .work-card {
+      background: var(--surface); border-radius: var(--r); box-shadow: var(--sh);
+      overflow: hidden; cursor: pointer;
+      transition: box-shadow 0.25s ease, transform 0.25s ease;
+    }
+    .work-card:hover { box-shadow: var(--sh-h); transform: translateY(-1px); }
+    .work-header {
+      display: grid; grid-template-columns: 1.4fr 2fr 1fr 44px;
+      align-items: center; gap: 24px; padding: 22px 28px; user-select: none;
+    }
+    .work-co { font-size: 17px; font-weight: 600; letter-spacing: -0.02em; color: var(--text); }
+    .work-role { font-size: 14px; color: var(--text-2); line-height: 1.45; }
+    .work-dates { font-size: 12px; color: var(--text-3); text-align: right; }
+    .work-toggle {
+      width: 36px; height: 36px; border-radius: 50%; background: var(--bg);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 16px; color: var(--text-2);
+      transition: all 0.3s cubic-bezier(0.34, 1.3, 0.64, 1);
+      flex-shrink: 0; justify-self: end;
+    }
+    .work-card.open .work-toggle { background: var(--accent); color: #fff; transform: rotate(45deg); }
+    .work-body { overflow: hidden; max-height: 0; transition: max-height 0.45s cubic-bezier(0.4,0,0.2,1); }
+    .work-card.open .work-body { max-height: 700px; }
+    .work-body-inner {
+      display: grid; grid-template-columns: 1fr 240px; gap: 40px;
+      padding: 20px 28px 28px; align-items: start; border-top: 1px solid var(--border);
+    }
+    .work-bullets { list-style: none; display: flex; flex-direction: column; gap: 12px; }
+    .work-bullet {
+      font-size: 14px; line-height: 1.7; color: var(--text-2); padding-left: 18px; position: relative;
+    }
+    .work-bullet::before {
+      content: ''; position: absolute; left: 0; top: 0.72em; width: 8px; height: 1.5px; background: var(--accent);
+    }
+    .work-bullet strong { color: var(--text); font-weight: 600; }
+    .work-metric-box {
+      background: var(--bg); border-radius: 14px; padding: 24px;
+      text-align: center; position: sticky; top: 60px;
+    }
+    .work-metric-n {
+      font-size: 48px; font-weight: 700; letter-spacing: -0.04em;
+      color: var(--accent); line-height: 1; margin-bottom: 8px;
+    }
+    .work-metric-l { font-size: 12px; color: var(--text-2); line-height: 1.5; }
+
+    /* ── PHILOSOPHY ── */
+    .phil-center { max-width: 700px; margin: 0 auto; text-align: center; }
+    .phil-quote {
+      font-size: clamp(24px, 3vw, 40px); font-weight: 600; letter-spacing: -0.025em;
+      line-height: 1.2; color: var(--text); margin-bottom: 36px;
+    }
+    .phil-body { font-size: 15px; line-height: 1.8; color: var(--text-2); margin-bottom: 16px; }
+    .phil-tags { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin-top: 28px; }
+    .phil-tag {
+      padding: 6px 16px; border-radius: 40px; border: 1px solid var(--border);
+      font-size: 12px; font-weight: 500; color: var(--text-2); transition: all 0.2s;
+    }
+    .phil-tag:hover { border-color: var(--accent); color: var(--accent); }
+
+    /* ── PRINCIPLES ── */
+    .principles-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    .principle-card { background: var(--surface); border-radius: var(--r); padding: 36px 32px; box-shadow: var(--sh); }
+    .p-num {
+      font-size: 11px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase;
+      color: var(--accent); margin-bottom: 16px; display: block;
+    }
+    .p-title { font-size: 19px; font-weight: 600; letter-spacing: -0.02em; color: var(--text); margin-bottom: 12px; line-height: 1.3; }
+    .p-body { font-size: 14px; line-height: 1.75; color: var(--text-2); }
+
+    /* ── SKILLS ── */
+    .skills-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 36px; }
+    .skill-group-label {
+      font-size: 11px; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase;
+      color: var(--text-3); margin-bottom: 14px;
+    }
+    .skill-tags { display: flex; flex-wrap: wrap; gap: 7px; }
+    .skill-tag {
+      padding: 5px 14px; border-radius: 40px; font-size: 12px; font-weight: 500;
+      border: 1px solid var(--border); color: var(--text-2); background: var(--surface);
+      transition: border-color 0.18s;
+    }
+    .skill-tag:hover { border-color: var(--text-3); }
+    .skill-tag.key { background: rgba(0,113,227,0.06); border-color: rgba(0,113,227,0.25); color: var(--accent); }
+
+    /* ── EDUCATION ── */
+    .edu-row {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 32px;
+      margin-top: 56px; padding-top: 48px; border-top: 1px solid var(--border);
+    }
+    .edu-school { font-size: 19px; font-weight: 600; letter-spacing: -0.02em; color: var(--text); margin-bottom: 5px; }
+    .edu-degree { font-size: 14px; color: var(--text-2); margin-bottom: 4px; }
+    .edu-meta { font-size: 12px; color: var(--text-3); }
+
+    /* ── CONTACT ── */
+    .contact-section { background: var(--text); padding: 120px 48px 96px; text-align: center; }
+    .contact-eyebrow {
+      font-size: 11px; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase;
+      color: rgba(255,255,255,0.35); margin-bottom: 28px;
+    }
+    .contact-heading {
+      font-size: clamp(52px, 8vw, 96px); font-weight: 700; letter-spacing: -0.03em;
+      line-height: 1.0; color: #fff; margin-bottom: 52px;
+    }
+    .contact-heading em { color: var(--accent); font-style: normal; }
+    .contact-btns { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+    .contact-btn {
+      padding: 14px 32px; border-radius: 40px; font-size: 15px; font-weight: 500;
+      text-decoration: none; transition: all 0.22s; letter-spacing: -0.01em;
+    }
+    .contact-btn.primary { background: var(--accent); color: #fff; }
+    .contact-btn.primary:hover { background: var(--accent-h); }
+    .contact-btn.secondary {
+      background: rgba(255,255,255,0.1); color: rgba(255,255,255,0.8);
+      border: 1px solid rgba(255,255,255,0.15);
+    }
+    .contact-btn.secondary:hover { background: rgba(255,255,255,0.18); color: #fff; }
+
+    /* ── FOOTER ── */
+    footer {
+      background: var(--text); border-top: 1px solid rgba(255,255,255,0.07);
+      padding: 20px 48px; display: flex; justify-content: space-between; align-items: center;
+    }
+    .footer-text { font-size: 12px; color: rgba(255,255,255,0.28); }
+
+    /* ── REVEAL ── */
+    .reveal { opacity: 0; transform: translateY(20px); transition: opacity 0.7s ease, transform 0.7s ease; }
+    .reveal.in { opacity: 1; transform: translateY(0); }
+    .reveal-d1 { transition-delay: 0.1s; }
+    .reveal-d2 { transition-delay: 0.2s; }
+
+    /* ── MOBILE ── */
+    @media (max-width: 768px) {
+      .hero { padding: 72px 24px 64px; }
+      .metrics-band { padding: 24px; }
+      .metrics-inner { grid-template-columns: 1fr 1fr; }
+      .sec { padding: 60px 24px; }
+      .work-header { grid-template-columns: 1fr 44px; }
+      .work-role, .work-dates { display: none; }
+      .work-body-inner { grid-template-columns: 1fr; }
+      .principles-grid { grid-template-columns: 1fr; }
+      .skills-grid { grid-template-columns: 1fr; gap: 24px; }
+      .edu-row { grid-template-columns: 1fr; gap: 24px; }
+      .contact-section { padding: 80px 24px; }
+      footer { padding: 16px 24px; flex-direction: column; gap: 4px; text-align: center; }
+    }
+  </style>
+</head>
+<body>
+
+  <main>
+    <section class="hero">
+      <div class="hero-eyebrow">Technical Product Manager · Metro-Atlanta, GA</div>
+      <h1 class="hero-name">Michael Esser</h1>
+      <p class="hero-summary">I turn complex technical systems into clear product strategy and love finding ways to help engineering teams move faster - and keep quality. With 8+ years across product ownership, software engineering, and enterprise SaaS, I've learned that the best products come from truly understanding both the technology and the people using it.</p>
+      <div class="hero-badges"><span class="hero-badge"><span class="b-co">The Learning Network</span> · Senior Technical Product Owner</span><span class="hero-badge">Previously: <span class="b-co">The Learning Network, Tortal Training</span></span><span class="hero-badge"><span class="b-co">5+</span> roles</span></div>
+    </section>
+
+    <div class="metrics-band">
+      <div class="metrics-inner"><div class="metric-card reveal">
+        <div class="metric-n">2<em>–3×</em></div>
+        <div class="metric-l">Engineering velocity increase through AI workflows</div>
+      </div><div class="metric-card reveal reveal-d1">
+        <div class="metric-n">200<em>%+</em></div>
+        <div class="metric-l">System performance improvement</div>
+      </div><div class="metric-card reveal reveal-d2">
+        <div class="metric-n"><em>~1M</em></div>
+        <div class="metric-l">Users supported on enterprise platforms</div>
+      </div><div class="metric-card reveal reveal-d3">
+        <div class="metric-n">8<em>+</em></div>
+        <div class="metric-l">Years product &amp; engineering experience</div>
+      </div></div>
+    </div>
+
+    <div class="content-wrap">
+      <section class="sec" id="work">
+        <div class="sec-label">Work history</div>
+        <div class="work-list">
+    <div class="work-card" onclick="toggleWork(this)">
+      <div class="work-header">
+        <div class="work-co">The Learning Network</div>
+        <div class="work-role">Senior Technical Product Owner</div>
+        <div class="work-dates">Jan 2022 — Jan 2026</div>
+        <div class="work-toggle">+</div>
+      </div>
+      <div class="work-body">
+        <div class="work-body-inner">
+          <ul class="work-bullets"><li class="work-bullet"><strong>Led product development</strong> for enterprise learning platforms supporting franchise and compliance ecosystems with approximately <strong>1 million users</strong></li><li class="work-bullet">Introduced <strong>AI-assisted development workflows</strong> that increased engineering velocity by 2–3x while improving developer collaboration</li><li class="work-bullet">Guided <strong>modernization of legacy platform</strong> components and API middleware, improving system performance by more than <strong>200%</strong></li><li class="work-bullet">Partnered with engineering, design, and customer success teams to align product capabilities with <strong>user adoption</strong> and platform scalability goals</li></ul>
+          <div class="work-metric-box">
+            <div class="work-metric-n">2–3×</div>
+            <div class="work-metric-l">Engineering velocity through AI workflows</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="work-card" onclick="toggleWork(this)">
+      <div class="work-header">
+        <div class="work-co">The Learning Network</div>
+        <div class="work-role">Senior Software Engineer &amp; Product Owner</div>
+        <div class="work-dates">Jan 2021 — Jan 2022</div>
+        <div class="work-toggle">+</div>
+      </div>
+      <div class="work-body">
+        <div class="work-body-inner">
+          <ul class="work-bullets"><li class="work-bullet">Designed and delivered <strong>enterprise SaaS features</strong> using .NET and SQL Server for training and compliance platforms</li><li class="work-bullet">Collaborated with leadership and engineering teams to convert <strong>stakeholder needs</strong> into scalable technical solutions</li><li class="work-bullet">Led <strong>analytics integrations</strong> that enabled enterprise customers to generate stronger operational insights from platform data</li></ul>
+          <div class="work-metric-box">
+            <div class="work-metric-n">Enterprise</div>
+            <div class="work-metric-l">SaaS features delivered end-to-end</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="work-card" onclick="toggleWork(this)">
+      <div class="work-header">
+        <div class="work-co">Tortal Training</div>
+        <div class="work-role">Technical Support Engineer</div>
+        <div class="work-dates">Jan 2020 — Jan 2021</div>
+        <div class="work-toggle">+</div>
+      </div>
+      <div class="work-body">
+        <div class="work-body-inner">
+          <ul class="work-bullets"><li class="work-bullet">Diagnosed <strong>complex system issues</strong> across APIs, integrations, and enterprise deployments</li><li class="work-bullet">Analyzed support trends and <strong>product usage data</strong> to identify recurring platform issues and inform product enhancements</li></ul>
+          <div class="work-metric-box">
+            <div class="work-metric-n">30%</div>
+            <div class="work-metric-l">Reduction in issue resolution</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="work-card" onclick="toggleWork(this)">
+      <div class="work-header">
+        <div class="work-co">Select Medical</div>
+        <div class="work-role">Patient Services Manager</div>
+        <div class="work-dates">Jan 2016 — Jan 2018</div>
+        <div class="work-toggle">+</div>
+      </div>
+      <div class="work-body">
+        <div class="work-body-inner">
+          <ul class="work-bullets"><li class="work-bullet">Implemented workflows for <strong>secure, efficient patient intake</strong>, scheduling and payment processes</li><li class="work-bullet">Ensured <strong>revenue visitation and targets</strong> are met through optimized processes</li></ul>
+          <div class="work-metric-box">
+            <div class="work-metric-n">EHR</div>
+            <div class="work-metric-l">Patient data workflows implemented</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="work-card" onclick="toggleWork(this)">
+      <div class="work-header">
+        <div class="work-co">Dae Han Martial Arts</div>
+        <div class="work-role">Director of Training Programs</div>
+        <div class="work-dates">Jan 2005 — Jan 2015</div>
+        <div class="work-toggle">+</div>
+      </div>
+      <div class="work-body">
+        <div class="work-body-inner">
+          <ul class="work-bullets"><li class="work-bullet">Managed <strong>day-to-day operations</strong> and programming for a community-focused training organization</li><li class="work-bullet">Led <strong>marketing and outreach</strong> initiatives that expanded engagement and strengthened brand visibility</li><li class="work-bullet">Youth <strong>Mentoring</strong>: served as a program director for a character-based martial arts &amp; fitness community, leading 100+ people / month in positive quality of life fitness habits.</li></ul>
+          <div class="work-metric-box">
+            <div class="work-metric-n">10</div>
+            <div class="work-metric-l">Years leading program operations</div>
+          </div>
+        </div>
+      </div>
+    </div></div>
+      </section>
+
+      <section class="sec" id="philosophy">
+        <div class="sec-label">Philosophy</div>
+        <div class="phil-center">
+          <blockquote class="phil-quote reveal">"The best products emerge when you deeply understand both the technology and the humans it serves—then find the leverage points where small changes create outsized impact."</blockquote>
+          <p class="phil-body reveal reveal-d1">My path to product management wasn't linear. I started in healthcare and community education, learning firsthand how systems—whether for patient intake or training programs—either empower or frustrate the people using them. That foundation in human-centered operations led me to technical support, then engineering, and finally to product ownership. Each step taught me something essential: how to listen to what users actually need, how systems break under real-world pressure, and how to translate between business goals and technical constraints.</p>
+          <p class="phil-body reveal reveal-d2">I'm obsessed with finding leverage. Whether it's introducing AI-assisted workflows that double engineering velocity or modernizing legacy systems that unlock new capabilities, I look for the interventions that create disproportionate impact. I believe product managers should be technical enough to understand the architecture and empathetic enough to feel the user's frustration. That combination is what lets you make the right tradeoffs—and ship things that actually matter.</p>
+          <div class="phil-tags"><span class="phil-tag">AI Workflows</span><span class="phil-tag">Platform Modernization</span><span class="phil-tag">Enterprise SaaS</span><span class="phil-tag">Technical Translation</span><span class="phil-tag">User Adoption</span></div>
+        </div>
+      </section>
+
+      <section class="sec">
+        <div class="sec-label">How I work</div>
+        <div class="principles-grid">
+    <div class="principle-card reveal">
+      <span class="p-num">01</span>
+      <div class="p-title">Start With the Constraints</div>
+      <p class="p-body">Every interesting product problem has a constraint at its core—technical debt, team capacity, user behavior, or market timing. I've learned to identify that constraint first, because solving the wrong problem quickly still wastes everyone's time. The best solutions often come from reframing the constraint itself.</p>
+    </div>
+    <div class="principle-card reveal">
+      <span class="p-num">02</span>
+      <div class="p-title">Translate, Don't Dictate</div>
+      <p class="p-body">Coming from engineering, I know how frustrating it is when product requirements feel disconnected from technical reality. I invest heavily in understanding what's actually hard, then work with teams to find solutions that satisfy both user needs and engineering sanity. The goal is shared understanding, not requirements documents that gather dust.</p>
+    </div>
+    <div class="principle-card reveal">
+      <span class="p-num">03</span>
+      <div class="p-title">Measure What Moves</div>
+      <p class="p-body">I've seen too many dashboards full of metrics nobody acts on. When I led analytics integrations, I focused on the numbers that would actually change decisions. If a metric doesn't have a clear 'if X then Y' attached to it, it's probably not worth tracking—at least not prominently.</p>
+    </div>
+    <div class="principle-card reveal">
+      <span class="p-num">04</span>
+      <div class="p-title">Multiply Through Tools</div>
+      <p class="p-body">The 2–3x velocity improvement I achieved through AI workflows wasn't magic—it came from systematically identifying where developers were spending time on low-leverage work, then finding tools and processes that eliminated that friction. I'm always looking for these multipliers, whether they're AI-powered or just better documentation.</p>
+    </div></div>
+      </section>
+
+      <section class="sec" id="expertise">
+        <div class="sec-label">Expertise</div>
+        <div class="skills-grid">
+    <div class="skill-group">
+      <div class="skill-group-label">Product &amp; Strategy</div>
+      <div class="skill-tags"><span class="skill-tag key">Technical Product Management</span><span class="skill-tag key">Product Road Mapping</span><span class="skill-tag">User Experience</span><span class="skill-tag key">Stakeholder Management</span><span class="skill-tag">Agile Execution</span><span class="skill-tag">Cross-Functional Leadership</span></div>
+    </div>
+    <div class="skill-group">
+      <div class="skill-group-label">AI &amp; Development</div>
+      <div class="skill-tags"><span class="skill-tag key">Cursor AI</span><span class="skill-tag key">OpenAI APIs</span><span class="skill-tag">Local LLM Experimentation</span><span class="skill-tag">Lovable</span><span class="skill-tag key">AI Workflow Enablement</span><span class="skill-tag">Process Improvement</span></div>
+    </div>
+    <div class="skill-group">
+      <div class="skill-group-label">Engineering &amp; Tools</div>
+      <div class="skill-tags"><span class="skill-tag key">.NET</span><span class="skill-tag key">SQL Server</span><span class="skill-tag">JavaScript</span><span class="skill-tag">React</span><span class="skill-tag">PHP</span><span class="skill-tag key">Jira</span><span class="skill-tag">Confluence</span><span class="skill-tag">GitHub</span><span class="skill-tag">Miro</span></div>
+    </div></div>
+        <div class="edu-row">
+    <div>
+      <div class="edu-school">Kennesaw State University</div>
+      <div class="edu-degree">Bachelor of Science in Exercise &amp; Health Science</div>
+      <div class="edu-meta">Kennesaw, GA</div>
+    </div>
+    <div>
+      <div class="edu-school">Scrum Alliance</div>
+      <div class="edu-degree">Certified Scrum Product Owner (CSPO)</div>
+      <div class="edu-meta">2022, 2024</div>
+    </div></div>
+      </section>
+    </div>
+
+    <section class="contact-section" id="contact">
+      <div class="contact-eyebrow">Get in touch</div>
+      <h2 class="contact-heading reveal">Let's build<br><em>something.</em></h2>
+      <div class="contact-btns"><a href="mailto:michaelesser@gmail.com" class="contact-btn primary">Send a message</a><a href="https://linkedin.com/in/michaelesser" class="contact-btn secondary" target="_blank" rel="noopener">LinkedIn</a></div>
+    </section>
+
+    <footer>
+      <span class="footer-text">Michael Esser · 2026</span>
+      <span class="footer-text">Technical Product Manager · Metro-Atlanta, GA</span>
+    </footer>
+  </main>
+<script>
+  function toggleWork(card) {
+    const isOpen = card.classList.contains('open');
+    document.querySelectorAll('.work-card.open').forEach(c => c.classList.remove('open'));
+    if (!isOpen) card.classList.add('open');
+  }
+  const revealEls = document.querySelectorAll('.reveal');
+  const revealObs = new IntersectionObserver(entries => {
+    entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('in'); revealObs.unobserve(e.target); } });
+  }, { threshold: 0.1 });
+  revealEls.forEach(el => revealObs.observe(el));
+</script>
+</body>
+</html>

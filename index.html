@@ -1,0 +1,815 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Michael Esser — Portfolio</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<style>
+/* ─── RESET ─────────────────────────────────────────────────── */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth;overflow-x:hidden;-webkit-overflow-scrolling:touch}
+body{
+  font-family:'Inter',sans-serif;
+  background:var(--bg);
+  color:var(--text);
+  cursor:none;
+  -webkit-font-smoothing:antialiased;
+}
+
+/* ─── TOKENS ────────────────────────────────────────────────── */
+:root{
+  --bg:#F7F7F5;
+  --surface:#EEECEA;
+  --text:#111111;
+  --text-2:#555555;
+  --text-3:#BBBBBB;
+  --accent:#1461F5;
+  --accent-dim:rgba(20,97,245,0.08);
+  --border:rgba(0,0,0,0.08);
+  --section-pad:120px 64px;
+}
+
+/* ─── CURSOR ─────────────────────────────────────────────────── */
+#cur-dot{
+  position:fixed;z-index:9999;pointer-events:none;
+  width:5px;height:5px;border-radius:50%;
+  background:var(--accent);
+  transform:translate(-50%,-50%);
+  transition:width .2s,height .2s;
+}
+#cur-ring{
+  position:fixed;z-index:9998;pointer-events:none;
+  width:36px;height:36px;border-radius:50%;
+  border:1px solid rgba(20,97,245,0.4);
+  transform:translate(-50%,-50%);
+  transition:width .25s,height .25s,border-color .25s;
+}
+body.hov #cur-dot{width:8px;height:8px;}
+body.hov #cur-ring{width:56px;height:56px;border-color:rgba(20,97,245,0.7);}
+
+/* ─── SCROLL PROGRESS ───────────────────────────────────────── */
+#progress{
+  position:fixed;top:0;left:0;width:0;height:2px;
+  background:var(--accent);z-index:2000;
+  transition:width 0.1s linear;
+}
+
+/* ─── NAV ────────────────────────────────────────────────────── */
+.pnav{
+  position:fixed;top:0;left:0;right:0;z-index:1000;
+  display:flex;align-items:center;justify-content:center;
+  padding:0 24px;height:48px;
+  background:rgba(247,247,245,0.92);
+  backdrop-filter:blur(20px);
+  -webkit-backdrop-filter:blur(20px);
+  border-bottom:1px solid var(--border);
+}
+.pnav-inner{
+  display:flex;align-items:center;gap:4px;
+  flex-wrap:wrap;
+  justify-content:center;
+}
+.pn{
+  display:inline-flex;align-items:center;
+  padding:5px 13px;border-radius:20px;
+  font-size:11.5px;font-weight:500;
+  color:var(--text-2);text-decoration:none;
+  transition:color .2s,background .2s;
+  white-space:nowrap;
+}
+.pn:hover{color:var(--text);}
+.pn.on{background:var(--accent);color:#fff;font-weight:600;}
+.pn-sep{
+  width:1px;height:14px;
+  background:var(--border);
+  margin:0 6px;
+  flex-shrink:0;
+}
+
+/* ─── HERO ───────────────────────────────────────────────────── */
+.hero{
+  position:relative;
+  min-height:100vh;
+  display:flex;flex-direction:column;justify-content:flex-end;
+  padding:140px 64px 80px;
+  overflow:hidden;
+}
+.hero::before{
+  content:'';
+  position:absolute;inset:0;
+  background:radial-gradient(ellipse at 80% 20%, rgba(20,97,245,0.06) 0%, transparent 60%);
+  pointer-events:none;
+}
+.hero-eyebrow-wrap{overflow:hidden;margin-bottom:28px;}
+.hero-eyebrow{
+  font-family:'DM Mono',monospace;
+  font-size:12px;font-weight:400;
+  color:var(--text-2);
+  letter-spacing:0.12em;
+  text-transform:uppercase;
+  transform:translateY(105%);
+  animation:slideUp .8s cubic-bezier(0.16,1,0.3,1) 0.1s forwards;
+}
+.hero-name-wrap{overflow:hidden;}
+.hero-name-wrap+.hero-name-wrap{margin-top:-0.06em;}
+.hero-line{
+  font-size:clamp(72px,10vw,140px);
+  font-weight:800;
+  letter-spacing:-0.04em;
+  line-height:0.88;
+  color:var(--text);
+  transform:translateY(105%);
+  animation:slideUp .9s cubic-bezier(0.16,1,0.3,1) forwards;
+}
+.hero-line.l1{animation-delay:0.05s;}
+.hero-line.l2{animation-delay:0.15s;color:var(--accent);}
+.hero-sub{
+  display:flex;align-items:center;gap:16px;
+  margin-top:36px;
+  flex-wrap:wrap;
+  opacity:0;
+  animation:fadeIn .7s ease 0.55s forwards;
+}
+.hero-title{
+  font-size:15px;font-weight:400;
+  color:var(--text-2);
+}
+.hero-dot{
+  width:3px;height:3px;border-radius:50%;
+  background:var(--text-3);
+  flex-shrink:0;
+}
+.hero-badge{
+  display:inline-flex;align-items:center;gap:6px;
+  padding:5px 12px;border-radius:20px;
+  background:var(--accent-dim);
+  border:1px solid rgba(20,97,245,0.25);
+  font-size:11.5px;font-weight:500;
+  color:var(--accent);
+  font-family:'DM Mono',monospace;
+  letter-spacing:0.04em;
+}
+.hero-badge-dot{
+  width:6px;height:6px;border-radius:50%;
+  background:var(--accent);
+  animation:pulse 2s ease infinite;
+}
+
+/* ─── MARQUEE ────────────────────────────────────────────────── */
+.marquee{
+  border-top:1px solid var(--border);
+  border-bottom:1px solid var(--border);
+  overflow:hidden;
+  padding:14px 0;
+  background:var(--bg);
+}
+.marquee-inner{
+  display:flex;
+  white-space:nowrap;
+}
+.marquee-track{
+  display:flex;
+  align-items:center;
+  animation:marqueeScroll 28s linear infinite;
+  flex-shrink:0;
+  will-change:transform;
+}
+.marquee-item{
+  display:inline-flex;align-items:center;gap:14px;
+  font-family:'DM Mono',monospace;
+  font-size:11px;font-weight:400;
+  color:var(--text-3);
+  text-transform:uppercase;
+  letter-spacing:0.14em;
+  padding:0 14px;
+}
+.marquee-item::after{
+  content:'';
+  width:3px;height:3px;border-radius:50%;
+  background:var(--accent);
+  flex-shrink:0;
+}
+
+/* ─── SECTION COMMON ────────────────────────────────────────── */
+.section{padding:var(--section-pad);}
+.section-label{
+  font-family:'DM Mono',monospace;
+  font-size:9.5px;color:var(--accent);
+  letter-spacing:0.22em;text-transform:uppercase;
+  margin-bottom:48px;
+  display:flex;align-items:center;gap:12px;
+}
+.section-label::after{
+  content:'';flex:1;
+  height:1px;background:var(--border);
+}
+
+/* ─── METRICS ────────────────────────────────────────────────── */
+.metrics-grid{
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  gap:1px;
+  background:var(--border);
+  border:1px solid var(--border);
+  border-radius:10px;
+  overflow:hidden;
+}
+.metric-cell{
+  background:var(--bg);
+  padding:40px 36px;
+  transition:background .2s;
+}
+.metric-cell:hover{background:var(--surface);}
+.metric-n{
+  font-size:clamp(44px,5vw,72px);
+  font-weight:800;
+  letter-spacing:-0.04em;
+  line-height:1;
+  color:var(--accent);
+  margin-bottom:12px;
+}
+.metric-n em{
+  font-size:0.55em;font-weight:500;
+  color:var(--text-3);font-style:normal;
+}
+.metric-label{
+  font-size:13px;font-weight:400;
+  color:var(--text-2);
+  line-height:1.4;
+}
+
+/* ─── WORK ───────────────────────────────────────────────────── */
+.work-list{border-top:1px solid var(--border);}
+.work-item{border-bottom:1px solid var(--border);}
+.work-header{
+  display:flex;align-items:center;
+  gap:20px;
+  padding:28px 0;
+  cursor:pointer;
+  user-select:none;
+  transition:opacity .2s;
+}
+.work-header:hover{opacity:0.85;}
+.work-num{
+  font-family:'DM Mono',monospace;
+  font-size:11px;color:var(--text-3);
+  width:28px;flex-shrink:0;
+  letter-spacing:0.08em;
+}
+.work-company{
+  font-size:22px;font-weight:700;
+  color:var(--text);flex:1;
+}
+.work-dates{
+  font-family:'DM Mono',monospace;
+  font-size:11px;color:var(--text-3);
+  letter-spacing:0.06em;
+  margin-left:auto;
+  flex-shrink:0;
+}
+.work-arrow{
+  width:28px;height:28px;border-radius:50%;
+  border:1px solid var(--border);
+  display:flex;align-items:center;justify-content:center;
+  font-size:11px;color:var(--text-3);
+  flex-shrink:0;
+  transition:transform .35s cubic-bezier(0.34,1.56,0.64,1),
+    border-color .2s,background .2s,color .2s;
+}
+.work-item.open .work-arrow{
+  transform:rotate(45deg);
+  background:var(--accent);color:#000;
+  border-color:var(--accent);
+}
+.work-body{
+  max-height:0;overflow:hidden;
+  transition:max-height .5s cubic-bezier(0.4,0,0.2,1);
+}
+.work-item.open .work-body{max-height:600px;}
+.work-inner{
+  padding:0 0 36px 48px;
+}
+.work-role{
+  font-size:13px;font-weight:500;color:var(--text-2);
+  margin-bottom:24px;
+  letter-spacing:0.02em;
+}
+.work-metrics{
+  display:flex;gap:32px;
+  margin-bottom:28px;
+  flex-wrap:wrap;
+}
+.work-metric{
+  display:flex;flex-direction:column;gap:3px;
+}
+.wm-n{
+  font-size:22px;font-weight:800;
+  color:var(--accent);letter-spacing:-0.03em;
+  line-height:1;
+}
+.wm-l{
+  font-size:11px;color:var(--text-3);
+  font-family:'DM Mono',monospace;
+  letter-spacing:0.06em;
+  text-transform:uppercase;
+}
+.work-bullets{
+  list-style:none;
+  display:flex;flex-direction:column;gap:10px;
+}
+.work-bullets li{
+  position:relative;
+  padding-left:22px;
+  font-size:14px;line-height:1.65;
+  color:var(--text-2);
+}
+.work-bullets li::before{
+  content:'–';
+  position:absolute;left:0;top:0;
+  color:var(--text-3);
+}
+.work-bullets li strong{color:var(--text);font-weight:600;}
+
+/* ─── SKILLS ─────────────────────────────────────────────────── */
+.skills-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(200px,1fr));
+  gap:24px;
+}
+.skill-group{}
+.skill-group-label{
+  font-family:'DM Mono',monospace;
+  font-size:9.5px;color:var(--accent);
+  letter-spacing:0.22em;text-transform:uppercase;
+  margin-bottom:14px;
+}
+.skill-tags{
+  display:flex;flex-wrap:wrap;gap:8px;
+}
+.skill-tag{
+  padding:6px 12px;
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-radius:4px;
+  font-size:11px;font-weight:400;
+  color:var(--text-2);
+  transition:color .2s,border-color .2s;
+  white-space:nowrap;
+}
+.skill-tag:hover{color:var(--accent);border-color:rgba(20,97,245,0.35);}
+
+/* ─── EDUCATION ──────────────────────────────────────────────── */
+.edu-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(280px,1fr));
+  gap:20px;
+}
+.edu-card{
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-radius:8px;
+  padding:28px 32px;
+  display:flex;flex-direction:column;gap:6px;
+}
+.edu-year{
+  font-family:'DM Mono',monospace;
+  font-size:11px;color:var(--text-3);
+  letter-spacing:0.08em;
+  margin-bottom:4px;
+}
+.edu-school{font-size:18px;font-weight:700;color:var(--text);}
+.edu-degree{font-size:12px;color:var(--text-2);}
+
+/* ─── CONTACT ────────────────────────────────────────────────── */
+.contact{
+  padding:var(--section-pad);
+  border-top:1px solid var(--border);
+}
+.contact-headline{
+  font-size:clamp(48px,7vw,96px);
+  font-weight:800;
+  letter-spacing:-0.04em;
+  line-height:0.9;
+  margin-bottom:56px;
+}
+.contact-headline span{color:var(--accent);}
+.contact-links{
+  display:flex;flex-wrap:wrap;gap:12px;
+}
+.contact-link{
+  display:inline-flex;align-items:center;gap:10px;
+  padding:13px 24px;
+  border:1px solid var(--border);
+  border-radius:40px;
+  font-size:13px;font-weight:500;
+  color:var(--text-2);
+  text-decoration:none;
+  transition:color .2s,border-color .2s,background .2s;
+}
+.contact-link:hover{
+  color:var(--accent);
+  border-color:rgba(20,97,245,0.35);
+  background:var(--accent-dim);
+}
+.contact-link svg{
+  width:15px;height:15px;
+  flex-shrink:0;
+  opacity:0.6;
+  transition:opacity .2s;
+}
+.contact-link:hover svg{opacity:1;}
+
+/* ─── REVEAL ANIMATIONS ─────────────────────────────────────── */
+.reveal{
+  opacity:0;
+  transform:translateY(22px);
+  transition:opacity .65s ease,transform .65s ease;
+}
+.reveal.in{
+  opacity:1;
+  transform:translateY(0);
+}
+
+/* ─── KEYFRAMES ──────────────────────────────────────────────── */
+@keyframes slideUp{
+  to{transform:translateY(0);}
+}
+@keyframes fadeIn{
+  to{opacity:1;}
+}
+@keyframes pulse{
+  0%,100%{opacity:1;transform:scale(1);}
+  50%{opacity:0.6;transform:scale(0.85);}
+}
+@keyframes marqueeScroll{
+  0%{transform:translateX(0);}
+  100%{transform:translateX(-100%);}
+}
+
+/* ─── RESPONSIVE ─────────────────────────────────────────────── */
+@media(max-width:900px){
+  :root{--section-pad:72px 28px;}
+  .hero{padding:100px 28px 60px;}
+  .metrics-grid{grid-template-columns:repeat(2,1fr);}
+  .work-dates{display:none;}
+  .hero-line{font-size:clamp(56px,12vw,100px);}
+}
+@media(max-width:600px){
+  .metrics-grid{grid-template-columns:1fr;}
+  .work-inner{padding:0 0 28px 0;}
+  .work-num{display:none;}
+  .contact-headline{font-size:clamp(36px,11vw,64px);}
+  .pnav{height:auto;padding:8px 12px;}
+}
+
+/* ─── GENERATOR ADDITIONS ────────────────────────────────────── */
+.marquee-wrap{
+  border-top:1px solid var(--border);
+  border-bottom:1px solid var(--border);
+  overflow:hidden;
+  padding:14px 0;
+  background:var(--bg);
+}
+.marquee-wrap .marquee-inner{
+  display:flex;
+  white-space:nowrap;
+}
+.hero-eyebrow{
+  font-family:'DM Mono',monospace;
+  font-size:12px;font-weight:400;
+  color:var(--text-2);
+  letter-spacing:0.12em;
+  text-transform:uppercase;
+  margin-bottom:28px;
+}
+.hero-meta{margin-top:36px;}
+.hero-meta-inner{
+  display:flex;align-items:center;gap:16px;
+  flex-wrap:wrap;
+  opacity:0;
+  animation:fadeIn .7s ease 0.55s forwards;
+}
+.name-line{display:block;overflow:hidden;}
+.name-line-inner{
+  display:block;
+  font-size:clamp(72px,10vw,140px);
+  font-weight:800;
+  letter-spacing:-0.04em;
+  line-height:0.88;
+  color:var(--text);
+  transform:translateY(105%);
+  animation:slideUp .9s cubic-bezier(0.16,1,0.3,1) 0.05s forwards;
+}
+.name-line:nth-child(2) .name-line-inner{
+  color:var(--accent);
+  animation-delay:0.15s;
+}
+.name-line-inner em{
+  font-style:normal;
+  color:var(--accent);
+}
+.work-metric-strip{
+  display:flex;gap:32px;
+  margin-bottom:28px;
+  flex-wrap:wrap;
+}
+.work-metric-strip .work-metric{
+  display:flex;flex-direction:column;gap:3px;
+}
+.work-metric-strip .work-m-n{
+  font-size:22px;font-weight:800;
+  color:var(--accent);letter-spacing:-0.03em;
+  line-height:1;
+}
+.work-metric-strip .work-m-l{
+  font-size:11px;color:var(--text-3);
+  font-family:'DM Mono',monospace;
+  letter-spacing:0.06em;
+  text-transform:uppercase;
+}
+.work-bullet{
+  position:relative;
+  padding-left:22px;
+  font-size:14px;line-height:1.65;
+  color:var(--text-2);
+  margin-bottom:10px;
+}
+.work-bullet::before{
+  content:'–';
+  position:absolute;left:0;top:0;
+  color:var(--text-3);
+}
+.work-bullet strong{color:var(--text);font-weight:600;}
+.work-bullets.div-list{list-style:none;display:flex;flex-direction:column;gap:10px;}
+.sk{
+  display:inline-block;
+  padding:6px 12px;
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-radius:4px;
+  font-size:11px;font-weight:400;
+  color:var(--text-2);
+  transition:color .2s,border-color .2s;
+  white-space:nowrap;
+  margin:3px;
+}
+.sk:hover{color:var(--accent);border-color:rgba(20,97,245,0.35);}
+.skill-group-name{
+  font-family:'DM Mono',monospace;
+  font-size:9.5px;color:var(--accent);
+  letter-spacing:0.22em;text-transform:uppercase;
+  margin-bottom:14px;
+}
+.edu-list{display:flex;flex-direction:column;gap:20px;}
+.edu-entry{display:flex;gap:24px;align-items:flex-start;}
+.edu-year{
+  font-family:'DM Mono',monospace;
+  font-size:11px;color:var(--text-3);
+  letter-spacing:0.08em;
+  width:40px;flex-shrink:0;
+  padding-top:2px;
+}
+.edu-school{font-size:18px;font-weight:700;color:var(--text);margin-bottom:4px;}
+.edu-deg{font-size:12px;color:var(--text-2);}
+.contact-section{
+  padding:var(--section-pad);
+  border-top:1px solid var(--border);
+}
+.contact-headline{
+  font-size:clamp(48px,7vw,96px);
+  font-weight:800;
+  letter-spacing:-0.04em;
+  line-height:0.9;
+  margin-bottom:56px;
+}
+.contact-headline em{font-style:normal;color:var(--accent);}
+</style>
+</head>
+<body>
+
+<!-- CURSOR -->
+<div id="cur-dot"></div>
+<div id="cur-ring"></div>
+
+<!-- PROGRESS -->
+<div id="progress"></div>
+
+
+  
+  <section class="hero">
+    <div class="hero-eyebrow"><span class="hero-eyebrow-inner">Technical Product Manager · Metro-Atlanta, GA</span></div>
+    <h1 class="hero-name">
+      <span class="name-line"><span class="name-line-inner">Michael</span></span>
+      <span class="name-line"><span class="name-line-inner"><em>Esser</em></span></span>
+    </h1>
+    <div class="hero-meta">
+      <div class="hero-meta-inner">
+        <span class="hero-title">Technical Product Manager</span>
+        <span class="hero-dot"></span>
+        <span class="hero-loc">METRO-ATLANTA, GA</span>
+        <span class="hero-badge">Open to conversations</span>
+      </div>
+    </div>
+  </section>
+  
+  <div class="marquee-wrap">
+    <div class="marquee-inner">
+      <div class="marquee-track" aria-hidden="true"><div class="marquee-item"><span>Technical Product Management</span></div><div class="marquee-item"><span>Product Road Mapping</span></div><div class="marquee-item"><span>User Experience</span></div><div class="marquee-item"><span>Stakeholder Management</span></div><div class="marquee-item"><span>Agile Execution</span></div><div class="marquee-item"><span>Cross-Functional Leadership</span></div><div class="marquee-item"><span>Cursor AI</span></div><div class="marquee-item"><span>OpenAI APIs</span></div><div class="marquee-item"><span>Local LLM Experimentation</span></div><div class="marquee-item"><span>Lovable</span></div></div>
+      <div class="marquee-track" aria-hidden="true"><div class="marquee-item"><span>Technical Product Management</span></div><div class="marquee-item"><span>Product Road Mapping</span></div><div class="marquee-item"><span>User Experience</span></div><div class="marquee-item"><span>Stakeholder Management</span></div><div class="marquee-item"><span>Agile Execution</span></div><div class="marquee-item"><span>Cross-Functional Leadership</span></div><div class="marquee-item"><span>Cursor AI</span></div><div class="marquee-item"><span>OpenAI APIs</span></div><div class="marquee-item"><span>Local LLM Experimentation</span></div><div class="marquee-item"><span>Lovable</span></div></div>
+    </div>
+  </div>
+  
+  <section class="section reveal">
+    <div class="section-label">By the numbers</div>
+    <div class="metrics-grid">
+      
+    <div class="metric-cell">
+      <div class="metric-n">2–3×</div>
+      <div class="metric-l">Engineering velocity increase through AI workflows</div>
+    </div>
+    <div class="metric-cell">
+      <div class="metric-n">200%+</div>
+      <div class="metric-l">System performance improvement</div>
+    </div>
+    <div class="metric-cell">
+      <div class="metric-n">~1M</div>
+      <div class="metric-l">Users supported on enterprise platforms</div>
+    </div>
+    <div class="metric-cell">
+      <div class="metric-n">8+</div>
+      <div class="metric-l">Years product &amp; engineering experience</div>
+    </div>
+    </div>
+  </section>
+  
+  <section class="section" style="padding-top:0">
+    <div class="section-label reveal">Work</div>
+    <div class="work-list">
+      
+      <div class="work-item reveal open">
+        <div class="work-header" onclick="toggleWork(this)">
+          <span class="work-num">01</span>
+          <span class="work-co">The Learning Network</span>
+          <span class="work-dates">Jan 2022 — Jan 2026</span>
+          <span class="work-arrow">+</span>
+        </div>
+        <div class="work-body">
+          <div class="work-inner">
+            <div class="work-role">Senior Technical Product Owner</div>
+            <div class="work-metric-strip"><div class="work-metric"><div class="work-m-n">2–3×</div><div class="work-m-l">Engineering velocity through AI workflows</div></div><div class="work-metric"><div class="work-m-n">200%+</div><div class="work-m-l">System performance improvement</div></div><div class="work-metric"><div class="work-m-n">~1M</div><div class="work-m-l">Users supported on enterprise platforms</div></div></div>
+            <div class="work-bullets"><div class="work-bullet"><strong>Led product development</strong> for enterprise learning platforms supporting franchise and compliance ecosystems with approximately <strong>1 million users</strong></div><div class="work-bullet">Introduced <strong>AI-assisted development workflows</strong> that increased engineering velocity by 2–3x while improving developer collaboration</div><div class="work-bullet">Guided <strong>modernization of legacy platform</strong> components and API middleware, improving system performance by more than <strong>200%</strong></div><div class="work-bullet">Partnered with engineering, design, and customer success teams to align product capabilities with <strong>user adoption</strong> and platform scalability goals</div></div>
+          </div>
+        </div>
+      </div>
+      <div class="work-item reveal">
+        <div class="work-header" onclick="toggleWork(this)">
+          <span class="work-num">02</span>
+          <span class="work-co">The Learning Network</span>
+          <span class="work-dates">Jan 2021 — Jan 2022</span>
+          <span class="work-arrow">+</span>
+        </div>
+        <div class="work-body">
+          <div class="work-inner">
+            <div class="work-role">Senior Software Engineer &amp; Product Owner</div>
+            <div class="work-metric-strip"><div class="work-metric"><div class="work-m-n">Enterprise</div><div class="work-m-l">SaaS features delivered end-to-end</div></div></div>
+            <div class="work-bullets"><div class="work-bullet">Designed and delivered <strong>enterprise SaaS features</strong> using .NET and SQL Server for training and compliance platforms</div><div class="work-bullet">Collaborated with leadership and engineering teams to convert <strong>stakeholder needs</strong> into scalable technical solutions</div><div class="work-bullet">Led <strong>analytics integrations</strong> that enabled enterprise customers to generate stronger operational insights from platform data</div></div>
+          </div>
+        </div>
+      </div>
+      <div class="work-item reveal">
+        <div class="work-header" onclick="toggleWork(this)">
+          <span class="work-num">03</span>
+          <span class="work-co">Tortal Training</span>
+          <span class="work-dates">Jan 2020 — Jan 2021</span>
+          <span class="work-arrow">+</span>
+        </div>
+        <div class="work-body">
+          <div class="work-inner">
+            <div class="work-role">Technical Support Engineer</div>
+            <div class="work-metric-strip"><div class="work-metric"><div class="work-m-n">30%</div><div class="work-m-l">Reduction in issue resolution</div></div></div>
+            <div class="work-bullets"><div class="work-bullet">Diagnosed <strong>complex system issues</strong> across APIs, integrations, and enterprise deployments</div><div class="work-bullet">Analyzed support trends and <strong>product usage data</strong> to identify recurring platform issues and inform product enhancements</div></div>
+          </div>
+        </div>
+      </div>
+      <div class="work-item reveal">
+        <div class="work-header" onclick="toggleWork(this)">
+          <span class="work-num">04</span>
+          <span class="work-co">Select Medical</span>
+          <span class="work-dates">Jan 2016 — Jan 2018</span>
+          <span class="work-arrow">+</span>
+        </div>
+        <div class="work-body">
+          <div class="work-inner">
+            <div class="work-role">Patient Services Manager</div>
+            <div class="work-metric-strip"><div class="work-metric"><div class="work-m-n">EHR</div><div class="work-m-l">Patient data workflows implemented</div></div></div>
+            <div class="work-bullets"><div class="work-bullet">Implemented workflows for <strong>secure, efficient patient intake</strong>, scheduling and payment processes</div><div class="work-bullet">Ensured <strong>revenue visitation and targets</strong> are met through optimized processes</div></div>
+          </div>
+        </div>
+      </div>
+      <div class="work-item reveal">
+        <div class="work-header" onclick="toggleWork(this)">
+          <span class="work-num">05</span>
+          <span class="work-co">Dae Han Martial Arts</span>
+          <span class="work-dates">Jan 2005 — Jan 2015</span>
+          <span class="work-arrow">+</span>
+        </div>
+        <div class="work-body">
+          <div class="work-inner">
+            <div class="work-role">Director of Training Programs</div>
+            <div class="work-metric-strip"><div class="work-metric"><div class="work-m-n">10</div><div class="work-m-l">Years leading program operations</div></div></div>
+            <div class="work-bullets"><div class="work-bullet">Managed <strong>day-to-day operations</strong> and programming for a community-focused training organization</div><div class="work-bullet">Led <strong>marketing and outreach</strong> initiatives that expanded engagement and strengthened brand visibility</div><div class="work-bullet">Youth <strong>Mentoring</strong>: served as a program director for a character-based martial arts &amp; fitness community, leading 100+ people / month in positive quality of life fitness habits.</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+  
+  <section class="section reveal" style="border-top:1px solid var(--border)">
+    <div class="section-label">Capabilities</div>
+    <div class="skills-grid">
+      
+      <div>
+        <div class="skill-group-name">Product &amp; Strategy</div>
+        <div class="skill-tags"><span class="sk">Technical Product Management</span><span class="sk">Product Road Mapping</span><span class="sk">User Experience</span><span class="sk">Stakeholder Management</span><span class="sk">Agile Execution</span><span class="sk">Cross-Functional Leadership</span></div>
+      </div>
+      <div>
+        <div class="skill-group-name">AI &amp; Development</div>
+        <div class="skill-tags"><span class="sk">Cursor AI</span><span class="sk">OpenAI APIs</span><span class="sk">Local LLM Experimentation</span><span class="sk">Lovable</span><span class="sk">AI Workflow Enablement</span><span class="sk">Process Improvement</span></div>
+      </div>
+      <div>
+        <div class="skill-group-name">Engineering &amp; Tools</div>
+        <div class="skill-tags"><span class="sk">.NET</span><span class="sk">SQL Server</span><span class="sk">JavaScript</span><span class="sk">React</span><span class="sk">PHP</span><span class="sk">Jira</span><span class="sk">Confluence</span><span class="sk">GitHub</span><span class="sk">Miro</span></div>
+      </div>
+    </div>
+  </section>
+  
+  <section class="section reveal" style="border-top:1px solid var(--border)">
+    <div class="section-label">Education</div>
+    <div class="edu-list">
+      <div class="edu-entry">
+        <span class="edu-year"></span>
+        <div>
+          <div class="edu-school">Kennesaw State University</div>
+          <div class="edu-deg">Bachelor of Science in Exercise &amp; Health Science · Kennesaw, GA</div>
+        </div>
+      </div>
+      <div class="edu-entry">
+        <span class="edu-year">2022</span>
+        <div>
+          <div class="edu-school">Scrum Alliance</div>
+          <div class="edu-deg">Certified Scrum Product Owner (CSPO)</div>
+        </div>
+      </div></div>
+  </section>
+  
+  <div class="contact-section reveal">
+    <div class="contact-headline">Let's build<br><em>something great.</em></div>
+    <div class="contact-links">
+      <a href="mailto:michaelesser@gmail.com" class="contact-link"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 8l9 6 9-6M3 8v10a1 1 0 001 1h16a1 1 0 001-1V8M3 8a1 1 0 011-1h16a1 1 0 011 1"/></svg> michaelesser@gmail.com</a>
+      <a href="https://linkedin.com/in/michaelesser" class="contact-link" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="currentColor" width="14" height="14"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 01-2.063-2.065 2.064 2.064 0 112.063 2.065zm1.782 13.019H3.555V9h3.564v11.452z"/></svg> linkedin.com/in/michaelesser</a>
+    </div>
+  </div>
+  <script>
+    const dot  = document.getElementById('cur-dot');
+    const ring = document.getElementById('cur-ring');
+    let mx=0,my=0,rx=0,ry=0;
+    document.addEventListener('mousemove',e=>{mx=e.clientX;my=e.clientY;});
+    (function tick(){
+      rx+=(mx-rx)*0.12; ry+=(my-ry)*0.12;
+      dot.style.left=mx+'px'; dot.style.top=my+'px';
+      ring.style.left=rx+'px'; ring.style.top=ry+'px';
+      requestAnimationFrame(tick);
+    })();
+    document.querySelectorAll('a,button,.work-header,.metric-cell,.sk').forEach(el=>{
+      el.addEventListener('mouseenter',()=>document.body.classList.add('hov'));
+      el.addEventListener('mouseleave',()=>document.body.classList.remove('hov'));
+    });
+
+    const prog=document.getElementById('progress');
+    window.addEventListener('scroll',()=>{
+      prog.style.width=(window.scrollY/(document.body.scrollHeight-window.innerHeight)*100)+'%';
+    },{passive:true});
+
+    const io=new IntersectionObserver(entries=>{
+      entries.forEach((e,i)=>{
+        if(e.isIntersecting){
+          e.target.style.transitionDelay=(i%4*0.08)+'s';
+          e.target.classList.add('in');
+          io.unobserve(e.target);
+        }
+      });
+    },{threshold:0.1});
+    document.querySelectorAll('.reveal').forEach(el=>io.observe(el));
+
+    function toggleWork(h){
+      const item=h.closest('.work-item');
+      const wasOpen=item.classList.contains('open');
+      document.querySelectorAll('.work-item.open').forEach(i=>i.classList.remove('open'));
+      if(!wasOpen) item.classList.add('open');
+    }
+  </script>
+</body>
+</html>

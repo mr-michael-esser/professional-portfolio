@@ -1,0 +1,671 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Michael Esser — Portfolio</title>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@300;400;500;600&family=DM+Mono:wght@400&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg:         #FAFAF8;
+      --surface:    #F0EDEA;
+      --text:       #080808;
+      --text-2:     #666666;
+      --text-3:     #BBBBBB;
+      --accent:     #FF3D1F;
+      --accent-dim: rgba(255,61,31,0.08);
+      --border:     rgba(0,0,0,0.08);
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { font-size: 16px; scroll-behavior: smooth; overflow-x: hidden; -webkit-overflow-scrolling: touch; }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Inter', system-ui, sans-serif;
+      font-weight: 400;
+      -webkit-font-smoothing: antialiased;
+      cursor: none;
+    }
+
+    /* ── CUSTOM CURSOR ── */
+    #cur-dot {
+      position: fixed; z-index: 9999; pointer-events: none;
+      width: 4px; height: 4px; border-radius: 50%;
+      background: var(--accent);
+      transform: translate(-50%,-50%);
+      transition: width .15s, height .15s;
+    }
+    #cur-ring {
+      position: fixed; z-index: 9998; pointer-events: none;
+      width: 40px; height: 40px; border-radius: 50%;
+      border: 1px solid rgba(255,61,31,0.5);
+      transform: translate(-50%,-50%);
+      transition: width .2s, height .2s, border-color .2s;
+    }
+    body.hov #cur-dot { width: 7px; height: 7px; }
+    body.hov #cur-ring { width: 60px; height: 60px; border-color: rgba(255,61,31,0.9); }
+
+    /* ── PROGRESS BAR ── */
+    #progress {
+      position: fixed; top: 0; left: 0; width: 0; height: 2px;
+      background: var(--accent); z-index: 2000;
+      transition: width .05s linear;
+    }
+
+    /* ── PORTFOLIO NAV ── */
+    .pnav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 1000;
+      display: flex; align-items: center; justify-content: center;
+      gap: 2px; padding: 8px 16px;
+      background: rgba(250,250,248,0.92);
+      backdrop-filter: blur(20px);
+      border-bottom: 1px solid transparent;
+      transition: border-color .3s;
+      flex-wrap: wrap;
+    }
+    .pnav.scrolled { border-color: var(--border); }
+    .pn {
+      padding: 5px 12px; border-radius: 40px;
+      font-size: 11px; font-weight: 500; font-family: 'Inter', sans-serif;
+      color: var(--text-2); text-decoration: none;
+      transition: color .2s, background .2s;
+      white-space: nowrap;
+    }
+    .pn:hover { color: var(--text); background: rgba(0,0,0,0.05); }
+    .pn.on { background: var(--accent); color: #fff; font-weight: 600; }
+    .ps { width: 1px; height: 14px; background: var(--border); margin: 0 4px; flex-shrink: 0; }
+
+    /* ── HERO ── */
+    .hero {
+      min-height: 100vh;
+      display: flex; flex-direction: column; justify-content: center;
+      padding: 120px 72px 80px;
+      position: relative;
+      overflow: hidden;
+    }
+    .hero-eyebrow {
+      font-family: 'DM Mono', monospace;
+      font-size: 10px; letter-spacing: 0.22em; text-transform: uppercase;
+      color: var(--text-3);
+      margin-bottom: 36px;
+    }
+    .hero-name {
+      display: block;
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: clamp(100px, 18vw, 220px);
+      line-height: 0.82;
+      letter-spacing: -0.01em;
+      color: var(--text);
+      margin-bottom: 28px;
+    }
+    .scramble-line { display: block; }
+    .scramble-line.accent { color: var(--accent); }
+    .hero-sub {
+      font-size: 13px;
+      font-weight: 400;
+      color: var(--text-2);
+      letter-spacing: 0.04em;
+      margin-top: 24px;
+    }
+    /* subtle grid background texture */
+    .hero::before {
+      content: '';
+      position: absolute; inset: 0;
+      background-image:
+        linear-gradient(var(--border) 1px, transparent 1px),
+        linear-gradient(90deg, var(--border) 1px, transparent 1px);
+      background-size: 80px 80px;
+      pointer-events: none;
+      opacity: 0.4;
+    }
+    /* accent glow */
+    .hero::after {
+      content: '';
+      position: absolute;
+      bottom: -100px; left: -60px;
+      width: 500px; height: 500px;
+      background: radial-gradient(circle, rgba(255,61,31,0.12) 0%, transparent 70%);
+      pointer-events: none;
+    }
+
+    /* ── TICKER ── */
+    .ticker-wrap {
+      width: 100%; overflow: hidden;
+      border-top: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+      padding: 14px 0;
+      background: var(--surface);
+    }
+    .ticker-inner { display: flex; }
+    .ticker-track {
+      display: flex; gap: 0; white-space: nowrap;
+      animation: ticker 30s linear infinite;
+    }
+    .ticker-track:hover { animation-play-state: paused; }
+    .ticker-item {
+      font-family: 'DM Mono', monospace;
+      font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase;
+      color: var(--text-3); padding: 0 28px;
+      display: flex; align-items: center; gap: 28px; white-space: nowrap;
+    }
+    .ticker-dot {
+      display: inline-block;
+      width: 4px; height: 4px; border-radius: 50%;
+      background: var(--accent);
+      flex-shrink: 0;
+    }
+    @keyframes ticker {
+      0%   { transform: translateX(0); }
+      100% { transform: translateX(-50%); }
+    }
+
+    /* ── STATS STRIP ── */
+    .stats-strip {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      border-top: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+    }
+    .stat-cell {
+      padding: 36px;
+      border-right: 1px solid var(--border);
+    }
+    .stat-cell:last-child { border-right: none; }
+    .stat-n {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: clamp(40px, 5vw, 68px);
+      line-height: 1; color: var(--accent);
+      letter-spacing: -0.01em;
+      margin-bottom: 8px;
+    }
+    .stat-l {
+      font-size: 11px; font-weight: 400;
+      color: var(--text-2); line-height: 1.5;
+    }
+
+    /* ── SECTION WRAPPER ── */
+    .section {
+      padding: 96px 72px;
+      border-top: 1px solid var(--border);
+    }
+    .section-label-wrap {
+      display: flex; align-items: center; gap: 16px;
+      margin-bottom: 48px;
+    }
+    .section-index {
+      font-family: 'DM Mono', monospace;
+      font-size: 10px; letter-spacing: 0.14em;
+      color: var(--text-3);
+    }
+    .section-label {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 13px; letter-spacing: 0.18em;
+      color: var(--accent);
+    }
+    .section-label-line { flex: 1; height: 1px; background: var(--border); }
+
+    /* ── WORK SECTION ── */
+    .work-list { }
+    .work-item {
+      border-bottom: 1px solid var(--border);
+      cursor: pointer;
+      /* clip-path reveal */
+      clip-path: inset(0 100% 0 0);
+      transition: clip-path .65s cubic-bezier(0.16,1,0.3,1), background .18s;
+    }
+    .work-item.in { clip-path: inset(0 0% 0 0); }
+    .work-item:nth-child(2) { transition-delay: .08s; }
+    .work-item:nth-child(3) { transition-delay: .16s; }
+    .work-item:nth-child(4) { transition-delay: .24s; }
+    .work-item:hover { background: var(--surface); }
+    .work-header {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      padding: 24px 48px;
+      user-select: none;
+    }
+    .work-num {
+      font-family: 'DM Mono', monospace;
+      font-size: 10px; letter-spacing: 0.1em;
+      color: var(--text-3); flex-shrink: 0;
+      width: 28px;
+    }
+    .work-co {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: clamp(32px, 4vw, 52px);
+      line-height: 1; letter-spacing: 0.01em;
+      color: var(--text); flex: 1;
+    }
+    .work-dates {
+      font-family: 'DM Mono', monospace;
+      font-size: 10px; letter-spacing: 0.06em;
+      color: var(--text-3);
+      margin-left: auto;
+    }
+    .work-arrow {
+      width: 36px; height: 36px; border-radius: 50%;
+      border: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 16px; color: var(--text-3);
+      transition: all .3s cubic-bezier(0.34,1.3,0.64,1);
+      flex-shrink: 0;
+    }
+    .work-item.open .work-arrow {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: #fff;
+      transform: rotate(45deg);
+    }
+    .work-body {
+      overflow: hidden;
+      max-height: 0;
+      transition: max-height .5s cubic-bezier(0.4,0,0.2,1);
+    }
+    .work-item.open .work-body { max-height: 700px; }
+    .work-inner {
+      padding: 0 48px 40px 48px;
+      max-width: 860px;
+    }
+    .work-role {
+      font-family: 'Inter', sans-serif;
+      font-size: 12px; font-weight: 500; letter-spacing: 0.04em;
+      color: var(--text-2); text-transform: uppercase;
+      margin-bottom: 20px;
+    }
+    .work-metric-strip {
+      display: flex; gap: 32px; flex-wrap: wrap;
+      margin-bottom: 24px;
+      padding-bottom: 20px;
+      border-bottom: 1px solid var(--border);
+    }
+    .work-metric {
+      display: flex; flex-direction: column; gap: 2px;
+    }
+    .wm-n {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 28px; color: var(--accent); line-height: 1;
+    }
+    .wm-l {
+      font-size: 10px; color: var(--text-3);
+      font-family: 'DM Mono', monospace;
+      letter-spacing: 0.06em; text-transform: uppercase;
+    }
+    .work-bullets { list-style: none; display: flex; flex-direction: column; gap: 14px; }
+    .work-bullet {
+      position: relative; padding-left: 22px;
+      font-size: 13px; line-height: 1.7;
+      color: var(--text-2);
+    }
+    .work-bullet::before {
+      content: ''; position: absolute;
+      left: 0; top: 0.72em;
+      width: 10px; height: 1px;
+      background: var(--accent);
+    }
+    .work-bullet strong { color: var(--text); font-weight: 600; }
+
+    /* ── PHILOSOPHY STRIP ── */
+    .philo-section {
+      padding: 120px 72px;
+      border-top: 1px solid var(--border);
+      display: flex; flex-direction: column;
+      align-items: center; text-align: center;
+    }
+    .philo-quote {
+      font-family: Georgia, 'Times New Roman', serif;
+      font-style: italic;
+      font-size: clamp(28px, 3.5vw, 48px);
+      line-height: 1.3;
+      color: var(--text);
+      max-width: 900px;
+      margin-bottom: 24px;
+    }
+    .philo-attr {
+      font-family: 'DM Mono', monospace;
+      font-size: 10px; letter-spacing: 0.14em;
+      color: var(--text-3);
+    }
+
+    /* ── SKILLS ── */
+    .skill-table {
+      display: flex; flex-direction: column; gap: 0;
+    }
+    .skill-row {
+      display: grid; grid-template-columns: 220px 1fr;
+      gap: 40px; align-items: baseline;
+      padding: 20px 0;
+      border-bottom: 1px solid var(--border);
+    }
+    .skill-row:first-child { border-top: 1px solid var(--border); }
+    .skill-cat {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 18px; letter-spacing: 0.05em;
+      color: var(--text);
+    }
+    .skill-items {
+      font-size: 13px; color: var(--text-2);
+      line-height: 1.6; font-weight: 400;
+    }
+
+    /* ── CONTACT ── */
+    .contact-hero {
+      min-height: 70vh;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      text-align: center;
+      padding: 80px 72px;
+      border-top: 1px solid var(--border);
+    }
+    .contact-head {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: clamp(80px, 14vw, 160px);
+      line-height: 0.88;
+      letter-spacing: -0.01em;
+      color: var(--text);
+      margin-bottom: 48px;
+    }
+    .contact-head .accent { color: var(--accent); }
+    .contact-links {
+      display: flex; gap: 10px; flex-wrap: wrap; justify-content: center;
+    }
+    .contact-link {
+      display: flex; align-items: center; gap: 8px;
+      padding: 12px 24px; border-radius: 40px;
+      font-size: 12px; font-weight: 500; letter-spacing: 0.05em;
+      text-decoration: none;
+      transition: all .22s;
+      font-family: 'Inter', sans-serif;
+      border: 1px solid var(--border);
+      color: var(--text-2);
+    }
+    .contact-link:hover { border-color: var(--accent); color: var(--accent); background: var(--accent-dim); }
+    .contact-link svg { width: 14px; height: 14px; flex-shrink: 0; opacity: 0.7; transition: opacity .2s; }
+    .contact-link:hover svg { opacity: 1; }
+
+    /* ── REVEAL ANIMATION ── */
+    .reveal {
+      opacity: 0; transform: translateY(24px);
+      transition: opacity .75s ease, transform .75s ease;
+    }
+    .reveal.in { opacity: 1; transform: none; }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 900px) {
+      .hero { padding: 100px 28px 60px; }
+      .section { padding: 72px 28px; }
+      .stats-strip { grid-template-columns: repeat(2,1fr); }
+      .stat-cell:nth-child(2) { border-right: none; }
+      .stat-cell { border-bottom: 1px solid var(--border); }
+      .stat-cell:nth-child(3), .stat-cell:last-child { border-bottom: none; }
+      .stat-cell:nth-child(3) { border-right: 1px solid var(--border); }
+      .work-dates { display: none; }
+      .philo-section { padding: 80px 28px; }
+      .contact-hero { padding: 80px 28px; }
+      .skill-row { grid-template-columns: 1fr; gap: 8px; }
+    }
+    @media (max-width: 600px) {
+      .stats-strip { grid-template-columns: 1fr; }
+      .stat-cell { border-right: none !important; }
+      .stat-cell:nth-child(3) { border-right: none !important; }
+      .stat-cell:last-child { border-bottom: none; }
+      .stat-cell:nth-child(1),
+      .stat-cell:nth-child(2),
+      .stat-cell:nth-child(3) { border-bottom: 1px solid var(--border); }
+      .contact-head { font-size: clamp(56px, 18vw, 120px); }
+      .work-header { gap: 12px; }
+      .work-num { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- CUSTOM CURSOR -->
+  <div id="cur-dot"></div>
+  <div id="cur-ring"></div>
+
+  <!-- PROGRESS BAR -->
+  <div id="progress"></div>
+
+
+  
+  <section class="hero">
+    <div class="hero-eyebrow">TECHNICAL PRODUCT MANAGER · METRO-ATLANTA, GA</div>
+    <h1 class="hero-name">
+      <span class="scramble-line" id="hero-fn" data-final="MICHAEL">XXXXXXX</span>
+      <span class="scramble-line accent" id="hero-ln" data-final="ESSER">XXXXX</span>
+    </h1>
+    <div class="hero-sub">Technical Product Manager · 5+ Roles · Available</div>
+  </section>
+  
+  <div class="ticker-wrap">
+    <div class="ticker-inner">
+      <div class="ticker-track"><span class="ticker-item">TECHNICAL PRODUCT MANAGEMENT <span class="ticker-dot"></span> </span><span class="ticker-item">PRODUCT ROAD MAPPING <span class="ticker-dot"></span> </span><span class="ticker-item">USER EXPERIENCE <span class="ticker-dot"></span> </span><span class="ticker-item">STAKEHOLDER MANAGEMENT <span class="ticker-dot"></span> </span><span class="ticker-item">AGILE EXECUTION <span class="ticker-dot"></span> </span><span class="ticker-item">CROSS-FUNCTIONAL LEADERSHIP <span class="ticker-dot"></span> </span><span class="ticker-item">CURSOR AI <span class="ticker-dot"></span> </span><span class="ticker-item">OPENAI APIS <span class="ticker-dot"></span> </span><span class="ticker-item">TECHNICAL PRODUCT MANAGEMENT <span class="ticker-dot"></span> </span><span class="ticker-item">PRODUCT ROAD MAPPING <span class="ticker-dot"></span> </span><span class="ticker-item">USER EXPERIENCE <span class="ticker-dot"></span> </span><span class="ticker-item">STAKEHOLDER MANAGEMENT <span class="ticker-dot"></span> </span><span class="ticker-item">AGILE EXECUTION <span class="ticker-dot"></span> </span><span class="ticker-item">CROSS-FUNCTIONAL LEADERSHIP <span class="ticker-dot"></span> </span><span class="ticker-item">CURSOR AI <span class="ticker-dot"></span> </span><span class="ticker-item">OPENAI APIS <span class="ticker-dot"></span> </span></div>
+    </div>
+  </div>
+  
+  <div class="stats-strip reveal">
+    <div class="stat-cell">
+      <div class="stat-n" data-count="23" data-sfx="–×">2–3×</div>
+      <div class="stat-l">Engineering velocity increase through AI workflows</div>
+    </div>
+    <div class="stat-cell">
+      <div class="stat-n" data-count="200" data-sfx="%+">200%+</div>
+      <div class="stat-l">System performance improvement</div>
+    </div>
+    <div class="stat-cell">
+      <div class="stat-n" data-count="1" data-sfx="~M">~1M</div>
+      <div class="stat-l">Users supported on enterprise platforms</div>
+    </div>
+    <div class="stat-cell">
+      <div class="stat-n" data-count="8" data-sfx="+">8+</div>
+      <div class="stat-l">Years product &amp; engineering experience</div>
+    </div></div>
+  
+  <section class="section">
+    <div class="section-label-wrap">
+      <span class="section-label">SELECTED WORK</span>
+      <span class="section-label-line"></span>
+    </div>
+    <div class="work-list">
+      <div class="work-item work-reveal open">
+        <div class="work-header" onclick="toggleWork(this)">
+          <span class="work-num">01</span>
+          <span class="work-co">The Learning Network</span>
+          <span class="work-dates">Jan 2022 — Jan 2026</span>
+          <span class="work-arrow">+</span>
+        </div>
+        <div class="work-body">
+          <div class="work-inner">
+            <div class="work-role">Senior Technical Product Owner</div>
+            <div class="work-metric-strip"><div class="work-metric"><span class="wm-n">2–3×</span><span class="wm-l">Engineering velocity through AI workflows</span></div><div class="work-metric"><span class="wm-n">200%+</span><span class="wm-l">System performance improvement</span></div></div>
+            <div class="work-bullets"><div class="work-bullet"><strong>Led product development</strong> for enterprise learning platforms supporting franchise and compliance ecosystems with approximately <strong>1 million users</strong></div><div class="work-bullet">Introduced <strong>AI-assisted development workflows</strong> that increased engineering velocity by 2–3x while improving developer collaboration</div><div class="work-bullet">Guided <strong>modernization of legacy platform</strong> components and API middleware, improving system performance by more than <strong>200%</strong></div><div class="work-bullet">Partnered with engineering, design, and customer success teams to align product capabilities with <strong>user adoption</strong> and platform scalability goals</div></div>
+          </div>
+        </div>
+      </div>
+      <div class="work-item work-reveal">
+        <div class="work-header" onclick="toggleWork(this)">
+          <span class="work-num">02</span>
+          <span class="work-co">The Learning Network</span>
+          <span class="work-dates">Jan 2021 — Jan 2022</span>
+          <span class="work-arrow">+</span>
+        </div>
+        <div class="work-body">
+          <div class="work-inner">
+            <div class="work-role">Senior Software Engineer &amp; Product Owner</div>
+            <div class="work-metric-strip"><div class="work-metric"><span class="wm-n">Enterprise</span><span class="wm-l">SaaS features delivered end-to-end</span></div></div>
+            <div class="work-bullets"><div class="work-bullet">Designed and delivered <strong>enterprise SaaS features</strong> using .NET and SQL Server for training and compliance platforms</div><div class="work-bullet">Collaborated with leadership and engineering teams to convert <strong>stakeholder needs</strong> into scalable technical solutions</div><div class="work-bullet">Led <strong>analytics integrations</strong> that enabled enterprise customers to generate stronger operational insights from platform data</div></div>
+          </div>
+        </div>
+      </div>
+      <div class="work-item work-reveal">
+        <div class="work-header" onclick="toggleWork(this)">
+          <span class="work-num">03</span>
+          <span class="work-co">Tortal Training</span>
+          <span class="work-dates">Jan 2020 — Jan 2021</span>
+          <span class="work-arrow">+</span>
+        </div>
+        <div class="work-body">
+          <div class="work-inner">
+            <div class="work-role">Technical Support Engineer</div>
+            <div class="work-metric-strip"><div class="work-metric"><span class="wm-n">30%</span><span class="wm-l">Reduction in issue resolution</span></div></div>
+            <div class="work-bullets"><div class="work-bullet">Diagnosed <strong>complex system issues</strong> across APIs, integrations, and enterprise deployments</div><div class="work-bullet">Analyzed support trends and <strong>product usage data</strong> to identify recurring platform issues and inform product enhancements</div></div>
+          </div>
+        </div>
+      </div>
+      <div class="work-item work-reveal">
+        <div class="work-header" onclick="toggleWork(this)">
+          <span class="work-num">04</span>
+          <span class="work-co">Select Medical</span>
+          <span class="work-dates">Jan 2016 — Jan 2018</span>
+          <span class="work-arrow">+</span>
+        </div>
+        <div class="work-body">
+          <div class="work-inner">
+            <div class="work-role">Patient Services Manager</div>
+            <div class="work-metric-strip"><div class="work-metric"><span class="wm-n">EHR</span><span class="wm-l">Patient data workflows implemented</span></div></div>
+            <div class="work-bullets"><div class="work-bullet">Implemented workflows for <strong>secure, efficient patient intake</strong>, scheduling and payment processes</div><div class="work-bullet">Ensured <strong>revenue visitation and targets</strong> are met through optimized processes</div></div>
+          </div>
+        </div>
+      </div>
+      <div class="work-item work-reveal">
+        <div class="work-header" onclick="toggleWork(this)">
+          <span class="work-num">05</span>
+          <span class="work-co">Dae Han Martial Arts</span>
+          <span class="work-dates">Jan 2005 — Jan 2015</span>
+          <span class="work-arrow">+</span>
+        </div>
+        <div class="work-body">
+          <div class="work-inner">
+            <div class="work-role">Director of Training Programs</div>
+            <div class="work-metric-strip"><div class="work-metric"><span class="wm-n">10</span><span class="wm-l">Years leading program operations</span></div></div>
+            <div class="work-bullets"><div class="work-bullet">Managed <strong>day-to-day operations</strong> and programming for a community-focused training organization</div><div class="work-bullet">Led <strong>marketing and outreach</strong> initiatives that expanded engagement and strengthened brand visibility</div><div class="work-bullet">Youth <strong>Mentoring</strong>: served as a program director for a character-based martial arts &amp; fitness community, leading 100+ people / month in positive quality of life fitness habits.</div></div>
+          </div>
+        </div>
+      </div></div>
+  </section>
+  
+  <section class="philo-section reveal">
+    <div class="philo-quote">"The best products emerge when you deeply understand both the technology and the humans it serves—then find the leverage points where small changes create outsized impact."</div>
+    <div class="philo-attr">— Michael Esser</div>
+  </section>
+  
+  <section class="section reveal" style="border-top:1px solid var(--border)">
+    <div class="section-label-wrap">
+      <span class="section-label">CAPABILITIES</span>
+      <span class="section-label-line"></span>
+    </div>
+    <div class="skill-table">
+    <div class="skill-row">
+      <div class="skill-cat">Product &amp; Strategy</div>
+      <div class="skill-items">Technical Product Management, Product Road Mapping, User Experience, Stakeholder Management, Agile Execution, Cross-Functional Leadership</div>
+    </div>
+    <div class="skill-row">
+      <div class="skill-cat">AI &amp; Development</div>
+      <div class="skill-items">Cursor AI, OpenAI APIs, Local LLM Experimentation, Lovable, AI Workflow Enablement, Process Improvement</div>
+    </div>
+    <div class="skill-row">
+      <div class="skill-cat">Engineering &amp; Tools</div>
+      <div class="skill-items">.NET, SQL Server, JavaScript, React, PHP, Jira, Confluence, GitHub, Miro</div>
+    </div></div>
+  </section>
+  
+  <section class="contact-hero reveal">
+    <div class="contact-head">LET'S<br>BUILD<br>SOMETHING<br><span class="accent">GREAT.</span></div>
+    <div class="contact-links"><a href="mailto:michaelesser@gmail.com" class="contact-link"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 8l9 6 9-6M3 8v10a1 1 0 001 1h16a1 1 0 001-1V8M3 8a1 1 0 011-1h16a1 1 0 011 1"/></svg> michaelesser@gmail.com</a><a href="https://linkedin.com/in/michaelesser" class="contact-link" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="currentColor" width="14" height="14"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 01-2.063-2.065 2.064 2.064 0 112.063 2.065zm1.782 13.019H3.555V9h3.564v11.452z"/></svg> linkedin.com/in/michaelesser</a></div>
+  </section>
+  <script>
+    // Scramble reveal
+    const CHARS='ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+    function scramble(el,delay,dur){
+      const final=el.dataset.final||el.textContent;
+      el.textContent=Array.from({length:final.length},()=>final[Math.floor(Math.random()*final.length)]||CHARS[Math.floor(Math.random()*CHARS.length)]).join('');
+      setTimeout(()=>{
+        const start=Date.now();
+        const t=setInterval(()=>{
+          const p=Math.min((Date.now()-start)/dur,1);
+          const r=Math.floor(p*final.length);
+          el.textContent=Array.from({length:final.length},(_,i)=>{
+            if(i<r)return final[i];
+            return final[i]===' '?' ':CHARS[Math.floor(Math.random()*CHARS.length)];
+          }).join('');
+          if(p>=1){el.textContent=final;clearInterval(t);}
+        },40);
+      },delay);
+    }
+    document.querySelectorAll('.scramble-line').forEach((el,i)=>scramble(el,200+i*300,700+i*200));
+
+    // Cursor
+    const dot=document.getElementById('cur-dot'),ring=document.getElementById('cur-ring');
+    let mx=0,my=0,rx=0,ry=0;
+    document.addEventListener('mousemove',e=>{mx=e.clientX;my=e.clientY;});
+    (function tick(){rx+=(mx-rx)*0.1;ry+=(my-ry)*0.1;dot.style.left=mx+'px';dot.style.top=my+'px';ring.style.left=rx+'px';ring.style.top=ry+'px';requestAnimationFrame(tick);})();
+    document.querySelectorAll('a,button,.work-header').forEach(el=>{
+      el.addEventListener('mouseenter',()=>document.body.classList.add('hov'));
+      el.addEventListener('mouseleave',()=>document.body.classList.remove('hov'));
+    });
+
+    // Scroll progress
+    const prog=document.getElementById('progress');
+    window.addEventListener('scroll',()=>{prog.style.width=(window.scrollY/(document.body.scrollHeight-window.innerHeight)*100)+'%';},{passive:true});
+
+    // Counter animation
+    const counted=new Set();
+    const cio=new IntersectionObserver(entries=>{
+      entries.forEach(e=>{
+        if(e.isIntersecting&&!counted.has(e.target)){
+          counted.add(e.target);
+          const target=parseFloat(e.target.dataset.count)||0;
+          const sfx=e.target.dataset.sfx||'';
+          const start=Date.now();const dur=1200;
+          const t2=setInterval(()=>{
+            const p=Math.min((Date.now()-start)/dur,1);
+            const ease=1-Math.pow(1-p,3);
+            const val=target<10?(ease*target).toFixed(1).replace(/.0$/,''):(Math.round(ease*target));
+            e.target.textContent=val+sfx;
+            if(p>=1)clearInterval(t2);
+          },16);
+        }
+      });
+    },{threshold:0.3});
+    document.querySelectorAll('[data-count]').forEach(el=>cio.observe(el));
+
+    // Scroll reveals
+    const rio=new IntersectionObserver(entries=>{
+      entries.forEach((e,i)=>{
+        if(e.isIntersecting){
+          e.target.style.transitionDelay=(i%3*0.1)+'s';
+          e.target.classList.add('in');
+          rio.unobserve(e.target);
+        }
+      });
+    },{threshold:0.1});
+    document.querySelectorAll('.reveal').forEach(el=>rio.observe(el));
+
+    // Work-reveal (clip-path wipe)
+    const workRevEls=document.querySelectorAll('.work-reveal');
+    function revealWork(el){if(!el.classList.contains('in'))el.classList.add('in');}
+    const wio=new IntersectionObserver(entries=>{
+      entries.forEach((e,i)=>{
+        if(e.isIntersecting){
+          setTimeout(()=>revealWork(e.target),i*80);
+          wio.unobserve(e.target);
+        }
+      });
+    },{threshold:0});
+    workRevEls.forEach(el=>wio.observe(el));
+    function checkWorkVis(){workRevEls.forEach(el=>{const r=el.getBoundingClientRect();if(r.top<window.innerHeight&&r.bottom>0)revealWork(el);});}
+    window.addEventListener('scroll',checkWorkVis,{passive:true});
+    checkWorkVis();setTimeout(checkWorkVis,100);
+
+    // Accordion
+    function toggleWork(h){
+      const item=h.closest('.work-item');
+      const wasOpen=item.classList.contains('open');
+      document.querySelectorAll('.work-item.open').forEach(i=>i.classList.remove('open'));
+      if(!wasOpen)item.classList.add('open');
+    }
+  </script>
+</body>
+</html>
